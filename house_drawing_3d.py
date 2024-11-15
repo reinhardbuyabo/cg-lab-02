@@ -2,7 +2,8 @@ import cairo
 import math
 
 # Define colors
-house_color = (0.98, 0.85, 0.71)  # Beige color for the house
+house_color = (0.98, 0.85, 0.71)  # Beige color for the house front
+house_side_color = (0.93, 0.80, 0.66)  # Darker beige for the house side
 roof_color = (0.93, 0.39, 0.13)  # Orange color for the roof
 window_color = (0.63, 0.88, 0.81)  # Teal color for the windows
 door_color = (0.55, 0.27, 0.07)  # Dark brown color for the door
@@ -10,24 +11,26 @@ frame_color = (0, 0, 0)  # Black color for the frames
 
 
 def draw_house_frame(ctx):
-    # Roof outline
-    ctx.set_line_width(5)
-    ctx.set_source_rgb(*frame_color)
-    ctx.move_to(410, 100)
-    ctx.line_to(1200, 50)
-    ctx.line_to(1370, 340)
-    ctx.line_to(580, 400)
-    ctx.close_path()
-    ctx.stroke()
-
-    # Fill roof with color
-    ctx.set_source_rgb(*roof_color)
-    ctx.move_to(410, 100)
-    ctx.line_to(1200, 50)
-    ctx.line_to(1370, 340)
-    ctx.line_to(580, 400)
+    # House side (darker beige)
+    ctx.set_source_rgb(*house_side_color)
+    ctx.move_to(220, 280)
+    ctx.line_to(400, 100)
+    ctx.line_to(400, 130)
+    ctx.line_to(230, 300)
     ctx.close_path()
     ctx.fill()
+
+    # Roof outline and fill
+    ctx.set_line_width(5)
+    ctx.move_to(410, 100)
+    ctx.line_to(1200, 50)
+    ctx.line_to(1370, 340)
+    ctx.line_to(580, 400)
+    ctx.close_path()
+    ctx.set_source_rgb(*roof_color)
+    ctx.fill_preserve()
+    ctx.set_source_rgb(*frame_color)
+    ctx.stroke()
 
     # House frame
     ctx.set_line_width(8)
@@ -43,7 +46,7 @@ def draw_house_frame(ctx):
     ctx.close_path()
     ctx.stroke()
 
-    # Fill house with beige color
+    # Fill house front with beige color
     ctx.set_source_rgb(*house_color)
     ctx.move_to(250, 300)
     ctx.line_to(250, 700)
@@ -82,43 +85,58 @@ def draw_main_walls(ctx):
     ctx.stroke()
 
 
-# def draw_dormer(ctx):
-#     # Dormer outline
-#     ctx.set_line_width(3)
-#     ctx.set_source_rgb(*frame_color)
-#
-#     # Dormer roof
-#     ctx.move_to(600, 250)
-#     ctx.line_to(675, 175)
-#     ctx.line_to(725, 195)
-#     ctx.line_to(800, 250)
-#     ctx.close_path()
-#     ctx.stroke()
-#
-#     # Fill dormer roof
-#     ctx.set_source_rgb(*roof_color)
-#     ctx.fill_preserve()
-#     ctx.set_source_rgb(*frame_color)
-#     ctx.stroke()
-#
-#     # Dormer walls
-#     ctx.move_to(600, 250)
-#     ctx.line_to(600, 300)
-#     ctx.line_to(800, 300)
-#     ctx.line_to(800, 250)
-#     ctx.close_path()
-#     ctx.set_source_rgb(*house_color)
-#     ctx.fill_preserve()
-#     ctx.set_source_rgb(*frame_color)
-#     ctx.stroke()
+def draw_dormer(ctx):
+    # Dormer roof
+    ctx.move_to(600, 250)
+    ctx.line_to(675, 175)
+    ctx.line_to(725, 195)
+    ctx.line_to(800, 250)
+    ctx.close_path()
+    ctx.set_source_rgb(*roof_color)
+    ctx.fill_preserve()
+    ctx.set_source_rgb(*frame_color)
+    ctx.set_line_width(3)
+    ctx.stroke()
+
+    # Dormer walls
+    ctx.move_to(600, 250)
+    ctx.line_to(600, 300)
+    ctx.line_to(800, 300)
+    ctx.line_to(800, 250)
+    ctx.close_path()
+    ctx.set_source_rgb(*house_color)
+    ctx.fill_preserve()
+    ctx.set_source_rgb(*frame_color)
+    ctx.stroke()
+
+    # Dormer window frame
+    window_x = 650
+    window_y = 260
+    window_width = 100
+    window_height = 35
+
+    ctx.rectangle(window_x, window_y, window_width, window_height)
+    ctx.set_source_rgb(*window_color)
+    ctx.fill_preserve()
+    ctx.set_source_rgb(*frame_color)
+    ctx.stroke()
+
+    # Dormer window panes
+    ctx.move_to(window_x + window_width / 2, window_y)
+    ctx.line_to(window_x + window_width / 2, window_y + window_height)
+    ctx.stroke()
+
+    ctx.move_to(window_x, window_y + window_height / 2)
+    ctx.line_to(window_x + window_width, window_y + window_height / 2)
+    ctx.stroke()
 
 
 def draw_window(ctx, x, y, width, height):
-    ctx.save()  # Save the current state
+    ctx.save()
 
     # Apply perspective transformation
     ctx.translate(x, y)
-    ctx.scale(1, 0.8)  # Adjust for perspective
+    ctx.scale(1, 0.8)
 
     # Window frame
     ctx.set_line_width(3)
@@ -138,13 +156,12 @@ def draw_window(ctx, x, y, width, height):
     ctx.line_to(width, height / 2)
     ctx.stroke()
 
-    ctx.restore()  # Restore the previous state
+    ctx.restore()
 
 
 def draw_door(ctx, x, y, width, height):
     ctx.save()
 
-    # Apply perspective transformation
     ctx.translate(x, y)
     ctx.scale(1, 0.8)
 
@@ -177,22 +194,19 @@ def main():
     draw_house_frame(ctx)
     draw_small_roof_detail(ctx)
     draw_main_walls(ctx)
-    # draw_dormer(ctx)
+    draw_dormer(ctx)
 
     # Add windows
     draw_window(ctx, 300, 450, 100, 150)  # Left window
     draw_window(ctx, 700, 450, 80, 120)  # Center window 1
     draw_window(ctx, 900, 450, 80, 120)  # Center window 2
 
-    # Add dormer window
-    draw_window(ctx, 650, 220, 100, 70)  # Dormer window
-
     # Add door
     draw_door(ctx, 1100, 500, 70, 140)
 
     # Write to png
-    surface.write_to_png('house_2.png')
-    print('3D House with Colors Created!')
+    surface.write_to_png('house_3.png')
+    print('3D House with Updated Colors Created!')
 
 
 if __name__ == "__main__":
